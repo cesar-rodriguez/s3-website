@@ -14,9 +14,9 @@ resource "aws_s3_bucket" "b" {
   bucket = var.bucket_name
   acl    = "private"
 
-  versioning {
-    enabled = true
-  }
+#  versioning {
+#    enabled = true
+#  }
 
   tags = {
     Name = var.bucket_name
@@ -84,11 +84,11 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   enabled             = true
   default_root_object = "index.html"
 
-  logging_config {
-    include_cookies = false
-    bucket          = "mylogs.s3.amazonaws.com"
-    prefix          = "myprefix"
-  }
+#  logging_config {
+#    include_cookies = false
+#    bucket          = "mylogs.s3.amazonaws.com"
+#    prefix          = "myprefix"
+#  }
 
   default_cache_behavior {
     allowed_methods  = ["GET", "HEAD"]
@@ -116,8 +116,9 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 
   restrictions {
     geo_restriction {
-      restriction_type = "whitelist"
-      locations        = ["US"]
+        restriction_type = "none"
+      # restriction_type = "whitelist"
+      # locations        = ["US"]
     }
   }
 }
