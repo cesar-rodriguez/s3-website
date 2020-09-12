@@ -13,11 +13,10 @@ variable "bucket_name" {}
 resource "aws_s3_bucket" "b" {
   bucket = var.bucket_name
   acl    = "private"
-  #  acl    = "public-read"
-  #
-  #  website {
-  #    index_document = "index.html"
-  #  }
+
+  versioning {
+    enabled = true
+  }
 
   tags = {
     Name = var.bucket_name
@@ -85,11 +84,11 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   enabled             = true
   default_root_object = "index.html"
 
-  #  logging_config {
-  #    include_cookies = false
-  #    bucket          = "mylogs.s3.amazonaws.com"
-  #    prefix          = "myprefix"
-  #  }
+  logging_config {
+    include_cookies = false
+    bucket          = "mylogs.s3.amazonaws.com"
+    prefix          = "myprefix"
+  }
 
   default_cache_behavior {
     allowed_methods  = ["GET", "HEAD"]
@@ -104,12 +103,11 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
       }
     }
 
-    viewer_protocol_policy = "allow-all" #"redirect-to-https"
+    viewer_protocol_policy = "redirect-to-https"
     min_ttl                = 0
-    #default_ttl            = 3600
-    default_ttl = 0
-    max_ttl     = 86400
-    compress    = true
+    default_ttl            = 3600
+    max_ttl                = 86400
+    compress               = true
   }
 
   viewer_certificate {
@@ -118,7 +116,8 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 
   restrictions {
     geo_restriction {
-      restriction_type = "none"
+      restriction_type = "whitelist"
+      locations        = ["US"]
     }
   }
 }
