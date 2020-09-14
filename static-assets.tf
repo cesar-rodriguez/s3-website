@@ -6,9 +6,10 @@ variable "bucket_name" {}
 resource "aws_s3_bucket" "b" {
   bucket = var.bucket_name
   acl    = "private"
-
-  #  versioning {
-  #    enabled = true
+  #  acl    = "public-read"
+  #
+  #  website {
+  #    index_document = "index.html"
   #  }
 
   tags = {
@@ -47,7 +48,7 @@ resource "aws_s3_bucket_object" "html" {
   source       = "index.html"
   content_type = "text/html"
   etag         = filemd5("index.html")
-  #acl          = "public-read"
+  # acl          = "public-read"
 }
 
 resource "aws_s3_bucket_object" "image" {
@@ -56,6 +57,6 @@ resource "aws_s3_bucket_object" "image" {
   source       = "terrascan_logo.png"
   content_type = "image/png"
   etag         = filemd5("terrascan_logo.png")
-  #acl          = "public-read"
+  # acl          = "public-read"
 }
 
