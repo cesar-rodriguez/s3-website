@@ -34,3 +34,4 @@ override.tf.json
 *.json
 config
 accurics_report*
+.DS_Store
