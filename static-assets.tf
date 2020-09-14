@@ -47,7 +47,6 @@ resource "aws_s3_bucket_object" "html" {
   source       = "index.html"
   content_type = "text/html"
   etag         = filemd5("index.html")
-  #acl          = "public-read"
 }
 
 resource "aws_s3_bucket_object" "image" {
@@ -56,6 +55,5 @@ resource "aws_s3_bucket_object" "image" {
   source       = "terrascan_logo.png"
   content_type = "image/png"
   etag         = filemd5("terrascan_logo.png")
-  #acl          = "public-read"
 }
 
