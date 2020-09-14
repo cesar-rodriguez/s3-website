@@ -1,19 +1,22 @@
 # Used to get Account ID
 data "aws_caller_identity" "current" {}
 
-### S3 Bucket placed behind CloudFront
+### S3 Bucket hosting website
 variable "bucket_name" {}
 resource "aws_s3_bucket" "b" {
   bucket = var.bucket_name
-  acl    = "private"
+  acl    = "public-read"
 
-  #  versioning {
-  #    enabled = true
-  #  }
+  website {
+    index_document = "index.html"
+  }
 
   tags = {
     Name = var.bucket_name
   }
+}
+output "index_html" {
+  value = "http://${aws_s3_bucket.b.bucket_domain_name}/index.html"
 }
 
 resource "aws_s3_bucket_policy" "b" {
@@ -26,9 +29,7 @@ resource "aws_s3_bucket_policy" "b" {
         {
             "Sid": "PublicReadGetObject",
             "Effect": "Allow",
-            "Principal": {
-                "AWS": "${aws_cloudfront_origin_access_identity.oai.iam_arn}"
-            },
+            "Principal": "*",
             "Action": [
                 "s3:GetObject"
             ],
@@ -42,20 +43,19 @@ POLICY
 }
 
 resource "aws_s3_bucket_object" "html" {
-  bucket       = var.bucket_name
+  bucket       = aws_s3_bucket.b.bucket
   key          = "index.html"
   source       = "index.html"
+  acl          = "public-read"
   content_type = "text/html"
   etag         = filemd5("index.html")
-  #acl          = "public-read"
 }
 
 resource "aws_s3_bucket_object" "image" {
-  bucket       = var.bucket_name
+  bucket       = aws_s3_bucket.b.bucket
   key          = "/static/terrascan_logo.png"
   source       = "terrascan_logo.png"
+  acl          = "public-read"
   content_type = "image/png"
   etag         = filemd5("terrascan_logo.png")
-  #acl          = "public-read"
 }
-
