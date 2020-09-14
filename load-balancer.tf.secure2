@@ -1,0 +1,83 @@
+# CloudFront IPs
+data "aws_ip_ranges" "cloudfront" {
+  services = ["cloudfront"]
+}
+
+# A security group for the ELB so it is accessible via the web
+resource "aws_security_group" "public_elb_1" {
+  name        = "public-elb-1"
+  description = "Public Load Balancer"
+  vpc_id      = aws_vpc.vpc.id
+
+  # HTTP access from anywhere
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = slice(data.aws_ip_ranges.cloudfront.cidr_blocks, 0, 60)
+    #cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = [aws_vpc.vpc.cidr_block]
+  }
+}
+
+resource "aws_security_group" "public_elb_2" {
+  name        = "public-elb-2"
+  description = "Public Load Balancer"
+  vpc_id      = aws_vpc.vpc.id
+
+  # HTTP access from anywhere
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = slice(data.aws_ip_ranges.cloudfront.cidr_blocks, 60, length(data.aws_ip_ranges.cloudfront.cidr_blocks))
+    #cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = [aws_vpc.vpc.cidr_block]
+  }
+}
+
+resource "aws_elb" "public_elb" {
+  name = "public-elb"
+
+  subnets = aws_subnet.public.*.id
+  security_groups = [
+    "${aws_security_group.public_elb_1.id}",
+    "${aws_security_group.public_elb_2.id}"
+  ]
+  instances = aws_instance.web.*.id
+
+  health_check {
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    timeout             = 3
+    target              = "HTTP:80/app/index.html"
+    interval            = 15
+  }
+
+  connection_draining = true
+  listener {
+    instance_port     = 80
+    instance_protocol = "http"
+    lb_port           = 443
+    lb_protocol       = "https"
+  }
+
+  tags = {
+    Name = "public-elb"
+  }
+}
+
+output "elb_dns" {
+  description = "The DNS Name of the ELB"
+  value       = aws_elb.public_elb.dns_name
+}
