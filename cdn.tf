@@ -46,8 +46,15 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 
   restrictions {
     geo_restriction {
-      restriction_type = "none"
+      restriction_type = "whitelist"
+      locations        = ["US", "CA", "GB", "DE"]
     }
+  }
+
+  logging_config {
+    include_cookies = false
+    bucket          = "mylogs.s3.amazonaws.com"
+    prefix          = "myprefix"
   }
 }
 
