@@ -5,7 +5,7 @@ data "aws_caller_identity" "current" {}
 variable "bucket_name" {}
 resource "aws_s3_bucket" "b" {
   bucket = var.bucket_name
-  acl    = "private"
+  acl    = "public"
 
   #  versioning {
   #    enabled = true
